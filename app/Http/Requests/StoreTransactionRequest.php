@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreTransactionRequest extends FormRequest
 {
@@ -27,6 +28,13 @@ class StoreTransactionRequest extends FormRequest
             'amount' => 'required|numeric|gt:0',
             'date' => 'required|date|before_or_equal:today',
             'type' => 'required|in:income,expense',
+            'category_id' => [
+                'required',
+                Rule::exists('categories', 'id')
+                    ->where(fn ($query) =>
+                        $query->where('type', $this->input('type'))
+                    ),
+            ],
         ];
     }
 
