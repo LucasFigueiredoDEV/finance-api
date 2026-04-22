@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Category;
 use Carbon\Carbon;
 
 class Transaction extends Model
@@ -20,6 +21,7 @@ class Transaction extends Model
         'amount',
         'description',
         'date',
+        'category_id'
     ];
 
     /**
@@ -98,5 +100,13 @@ class Transaction extends Model
         return $this->is_income
             ? $this->amount
             : -$this->amount;
+    }
+
+    /**
+     * Get the category that this transaction belongs to.
+     */
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 }
