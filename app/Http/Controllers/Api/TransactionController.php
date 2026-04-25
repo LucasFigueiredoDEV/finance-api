@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Services\TransactionService;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
@@ -13,9 +14,9 @@ class TransactionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(TransactionService $transactionService)
+    public function index(Request $request,TransactionService $transactionService)
     {
-        $transactions = $transactionService->paginate();
+        $transactions = $transactionService->paginate($request);
         return response()->json($transactions, 200);
     }
 
