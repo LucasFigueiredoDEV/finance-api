@@ -11,6 +11,10 @@ Route::get('/test', function () {
     return response()->json(['message' => 'API is running']);
 });
 
+Route::prefix('transactions')->group(function () {
+    Route::get('/summary', [TransactionController::class, 'summary']);
+});
+
 /**
  * Transaction routes
  */
