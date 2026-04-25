@@ -46,4 +46,23 @@ class TransactionService {
         return Transaction::where('id', $id)->delete() > 0;
     }
 
+    public function getSummary(array $filters = []) {
+        $result = Transaction::query()
+                    ->selectRaw("
+                        COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as income,
+                        COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as expense
+                    ")
+                    ->when($filters['start_date'] ?? null, fn($q, $date) =>
+                        $q->whereDate('date', '>=', $date)
+                    )
+                    ->when($filters['end_date'] ?? null, fn($q, $date) =>
+                        $q->whereDate('date', '<=', $date)
+                    )
+                    ->first();
+        return [
+            'income'  => (float) $result->income,
+            'expense' => (float) $result->expense,
+            'balance' => (float) ($result->income - $result->expense),
+        ];
+    }
 }
