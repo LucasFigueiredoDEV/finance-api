@@ -63,4 +63,14 @@ class TransactionController extends Controller
 
         return response()->json(['message' => 'Transaction deleted successfully'], 200);
     }
+
+    /**
+     * Summary of transactions
+     */
+    public function summary(Request $request, TransactionService $service)
+    {
+        return response()->json(
+            $service->getSummary($request->all())
+        );
+    }
 }
