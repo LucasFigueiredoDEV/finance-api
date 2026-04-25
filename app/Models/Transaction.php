@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Category;
-use Carbon\Carbon;
 
 class Transaction extends Model
 {
@@ -108,5 +107,41 @@ class Transaction extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Scope for filtering by type
+     */
+    public function scopeType($query, $type)
+    {
+        return $query->where('type', $type);
+    }
+
+    /**
+     * Scope for filtering by date range
+     */
+    public function scopeDateBetween($query, $start, $end)
+    {
+        return $query
+            ->when($start, fn($q) => $q->whereDate('date', '>=', $start))
+            ->when($end, fn($q) => $q->whereDate('date', '<=', $end));
+    }
+
+    /**
+     * Scope for description search
+     */
+    public function scopeSearch($query, $term)
+    {
+        return $query->where('description', 'like', "%{$term}%");
+    }
+
+    /**
+     * Scope for amount range
+     */
+    public function scopeAmountBetween($query, $min, $max)
+    {
+        return $query
+            ->when($min, fn($q) => $q->where('amount', '>=', $min))
+            ->when($max, fn($q) => $q->where('amount', '<=', $max));
     }
 }
