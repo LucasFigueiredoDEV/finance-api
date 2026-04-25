@@ -3,11 +3,30 @@ namespace App\Services;
 
 use App\Models\Transaction;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Request;
 
 class TransactionService {
 
-    public function paginate() : LengthAwarePaginator {
-        return Transaction::paginate(10);
+    public function paginate(Request $filters) : LengthAwarePaginator {
+        return Transaction::query()
+            ->when($filters['type'] ?? null, fn($q, $type) => $q->type($type))
+            ->when(
+                $filters['start_date'] ?? null || $filters['end_date'] ?? null,
+                fn($q) => $q->dateBetween(
+                    $filters['start_date'] ?? null,
+                    $filters['end_date'] ?? null
+                )
+            )
+            ->when($filters['description'] ?? null, fn($q, $term) => $q->search($term))
+            ->when(
+                $filters['min_amount'] ?? null || $filters['max_amount'] ?? null,
+                fn($q) => $q->amountBetween(
+                    $filters['min_amount'] ?? null,
+                    $filters['max_amount'] ?? null
+                )
+            )
+            ->with('category')
+            ->paginate(10);
     }
 
     public function create(array $data) : Transaction {
