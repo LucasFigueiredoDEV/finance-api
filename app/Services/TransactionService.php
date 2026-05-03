@@ -39,13 +39,14 @@ class TransactionService {
         int $userId
     ): Transaction {
         return Transaction::query()
+            ->with('category')
             ->where('user_id', $userId)
             ->findOrFail($id);
     }
 
     public function update(Transaction $transaction, array $data) : Transaction {
         $transaction->update($data);
-        return $transaction->fresh();
+        return $transaction->fresh(['category']);
     }
 
     public function delete(string $id, int $userId) : bool {
