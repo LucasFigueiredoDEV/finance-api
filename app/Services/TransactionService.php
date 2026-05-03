@@ -7,22 +7,23 @@ use Illuminate\Http\Request;
 
 class TransactionService {
 
-    public function paginate(Request $filters) : LengthAwarePaginator {
+    public function paginate(Request $request, int $userId) : LengthAwarePaginator {
         return Transaction::query()
-            ->when($filters['type'] ?? null, fn($q, $type) => $q->type($type))
+            ->where('user_id', $userId)
+            ->when($request['type'] ?? null, fn($q, $type) => $q->type($type))
             ->when(
-                $filters['start_date'] ?? null || $filters['end_date'] ?? null,
+                $request['start_date'] ?? null || $request['end_date'] ?? null,
                 fn($q) => $q->dateBetween(
-                    $filters['start_date'] ?? null,
-                    $filters['end_date'] ?? null
+                    $request['start_date'] ?? null,
+                    $request['end_date'] ?? null
                 )
             )
-            ->when($filters['description'] ?? null, fn($q, $term) => $q->search($term))
+            ->when($request['description'] ?? null, fn($q, $term) => $q->search($term))
             ->when(
-                $filters['min_amount'] ?? null || $filters['max_amount'] ?? null,
+                $request['min_amount'] ?? null || $request['max_amount'] ?? null,
                 fn($q) => $q->amountBetween(
-                    $filters['min_amount'] ?? null,
-                    $filters['max_amount'] ?? null
+                    $request['min_amount'] ?? null,
+                    $request['max_amount'] ?? null
                 )
             )
             ->with('category')
@@ -33,8 +34,13 @@ class TransactionService {
         return Transaction::create($data);
     }
 
-    public function find(string $id) : ?Transaction {
-        return Transaction::find($id);
+    public function findOrFail(
+        string $id,
+        int $userId
+    ): Transaction {
+        return Transaction::query()
+            ->where('user_id', $userId)
+            ->findOrFail($id);
     }
 
     public function update(Transaction $transaction, array $data) : Transaction {
@@ -42,16 +48,17 @@ class TransactionService {
         return $transaction->fresh();
     }
 
-    public function delete(string $id) : bool {
-        return Transaction::where('id', $id)->delete() > 0;
+    public function delete(string $id, int $userId) : bool {
+        return Transaction::where('user_id', $userId)->where('id', $id)->delete() > 0;
     }
 
-    public function getSummary(array $filters = []) {
+    public function getSummary(array $filters = [], int $userId) {
         $result = Transaction::query()
                     ->selectRaw("
                         COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as income,
                         COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as expense
                     ")
+                    ->where('user_id', $userId)
                     ->when($filters['start_date'] ?? null, fn($q, $date) =>
                         $q->whereDate('date', '>=', $date)
                     )
