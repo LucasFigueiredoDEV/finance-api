@@ -88,4 +88,88 @@ class TransactionTest extends TestCase
 
         $response->assertNotFound();
     }
+
+    /**
+     * Test if a user can access their own transaction.
+     */
+    public function test_user_can_show_their_own_transaction(): void
+    {
+        $user = User::factory()->create();
+
+        $transaction = \App\Models\Transaction::factory()->create([
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->getJson("/api/transactions/{$transaction->id}");
+
+        $response
+            ->assertOk()
+            ->assertJsonPath(
+                'data.id',
+                $transaction->id
+            );
+    }
+
+    /**
+     * Test if a user can update their own transaction and that the changes are reflected in the database.
+     */
+    public function test_user_can_update_their_own_transaction(): void
+    {
+        $user = User::factory()->create();
+
+        $category = Category::factory()->create([
+            'type' => 'income',
+        ]);
+
+        $transaction = \App\Models\Transaction::factory()->create([
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->putJson(
+                "/api/transactions/{$transaction->id}",
+                [
+                    'description' => 'Novo salário',
+                    'amount' => 7000,
+                    'type' => 'income',
+                    'date' => '2026-05-03',
+                    'category_id' => $category->id,
+                ]
+            );
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('transactions', [
+            'id' => $transaction->id,
+            'description' => 'Novo salário',
+        ]);
+    }
+
+    /**
+     * Test if a user can delete their own transaction and that the transaction is removed from the database.
+     */
+    public function test_user_can_delete_their_own_transaction(): void
+    {
+        $user = User::factory()->create();
+
+        $transaction = \App\Models\Transaction::factory()->create([
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->deleteJson(
+                "/api/transactions/{$transaction->id}"
+            );
+
+        $response->assertOk();
+
+        $this->assertDatabaseMissing('transactions', [
+            'id' => $transaction->id,
+        ]);
+    }
 }
