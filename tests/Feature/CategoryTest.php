@@ -20,6 +20,9 @@ class CategoryTest extends TestCase
         $this->user = User::factory()->create();
     }
 
+    /**
+     * Test if an authenticated user can list their categories and that they cannot see categories of other users.
+     */
     public function test_can_list_categories(): void
     {
         Category::factory()
@@ -33,6 +36,9 @@ class CategoryTest extends TestCase
             ->assertJsonCount(3, 'data');
     }
 
+    /**
+     * Test if an authenticated user can create a category and that the category is associated with the correct user.
+     */
     public function test_can_create_category(): void
     {
         $response = $this
@@ -50,6 +56,9 @@ class CategoryTest extends TestCase
         ]);
     }
 
+    /**
+     * Test if an authenticated user can view a category and that they cannot view categories of other users.
+     */
     public function test_can_show_category(): void
     {
         $category = Category::factory()->create();
@@ -66,6 +75,9 @@ class CategoryTest extends TestCase
             );
     }
 
+    /**
+     * Test if an authenticated user can update a category and that they cannot update categories of other users.
+     */
     public function test_can_update_category(): void
     {
         $category = Category::factory()->create();
@@ -87,6 +99,9 @@ class CategoryTest extends TestCase
         ]);
     }
 
+    /**
+     * Test if an authenticated user can delete a category and that they cannot delete categories of other users.
+     */
     public function test_can_delete_category(): void
     {
         $category = Category::factory()->create();
@@ -102,6 +117,9 @@ class CategoryTest extends TestCase
         ]);
     }
 
+    /**
+     * Test if an authenticated user cannot access a category that belongs to another user.
+     */
     public function test_returns_404_when_category_not_found(): void
     {
         $response = $this
