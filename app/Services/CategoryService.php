@@ -14,8 +14,9 @@ class CategoryService {
         return Category::create($data);
     }
 
-    public function find(string $id) : ?Category {
-        return Category::find($id);
+    public function findOrFail(string $id): Category
+    {
+        return Category::findOrFail($id);
     }
 
     public function update(Category $category, array $data) : Category {
