@@ -20,7 +20,8 @@ class Transaction extends Model
         'amount',
         'description',
         'date',
-        'category_id'
+        'category_id',
+        'user_id',
     ];
 
     /**
