@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\CategoryService;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
-use App\Models\Category;
+use App\Http\Resources\CategoryResource;
 
 class CategoryController extends Controller
 {
@@ -16,7 +16,7 @@ class CategoryController extends Controller
     public function index(CategoryService $categoryService)
     {
         $categories = $categoryService->paginate();
-        return response()->json($categories, 200);
+        return CategoryResource::collection($categories);
     }
 
     /**
@@ -25,7 +25,9 @@ class CategoryController extends Controller
     public function store(StoreCategoryRequest $request, CategoryService $categoryService)
     {
         $category = $categoryService->create($request->validated());
-        return response()->json($category, 201);
+        return (new CategoryResource($category))
+                ->response()
+                ->setStatusCode(201);
     }
 
     /**
@@ -33,25 +35,27 @@ class CategoryController extends Controller
      */
     public function show(string $id, CategoryService $categoryService)
     {
-        $category = $categoryService->find($id);
-        return response()->json($category, 200);
+        $category = $categoryService->findOrFail($id);
+        return new CategoryResource($category);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCategoryRequest $request, Category $category, CategoryService $categoryService)
+    public function update(UpdateCategoryRequest $request, string $id, CategoryService $categoryService)
     {
-        $categoryService->update($category, $request->validated());
-        return response()->json($category, 200);
+        $category = $categoryService->findOrFail($id);
+        $category = $categoryService->update($category, $request->validated());
+
+        return new CategoryResource($category);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id, CategoryService $categoryService)
     {
-        $deleted = (new CategoryService())->delete($id);
+        $deleted = $categoryService->delete($id);
 
         if (! $deleted) {
             return response()->json(['message' => 'Category not found'], 404);
