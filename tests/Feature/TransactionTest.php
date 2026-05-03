@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
+use App\Models\Category;
 
 class TransactionTest extends TestCase
 {
@@ -46,7 +47,9 @@ class TransactionTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $category = \App\Models\Category::factory()->create();
+        $category = Category::factory()->create([
+            'type' => 'income',
+        ]);
 
         $response = $this
             ->actingAs($user)
