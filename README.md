@@ -40,11 +40,29 @@ Install dependencies:
 composer install
 ```
 
+### ⚠️ Important
+
+Before starting, make sure to properly configure your `.env` file, especially database credentials.  
+The application will not run without a valid database connection.
+
+---
+
 Copy `.env` file:
 
 ```bash
 cp .env.example .env
 ```
+
+
+### 🚀 Automatic installation (recommended)
+Run the full setup command:
+```bash
+php artisan finance:install
+```
+
+---
+
+### 🖐️ Manual installation (optional)
 
 Generate application key:
 
@@ -55,10 +73,12 @@ php artisan key:generate
 Configure your database in `.env`, then run migrations:
 
 ```bash
-php artisan migrate
+php artisan migrate --seed
 ```
 
-Run the server:
+---
+
+### ▶️ Run the server:
 
 ```bash
 php artisan serve
