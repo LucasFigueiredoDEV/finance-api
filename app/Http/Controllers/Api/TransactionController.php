@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Services\TransactionService;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
-use App\Models\Transaction;
 
 class TransactionController extends Controller
 {
@@ -16,7 +15,7 @@ class TransactionController extends Controller
      */
     public function index(Request $request,TransactionService $transactionService)
     {
-        $transactions = $transactionService->paginate($request);
+        $transactions = $transactionService->paginate($request, auth()->id());
         return response()->json($transactions, 200);
     }
 
@@ -25,7 +24,10 @@ class TransactionController extends Controller
      */
     public function store(StoreTransactionRequest $request, TransactionService $transactionService)
     {
-        $transaction = $transactionService->create($request->validated());
+        $transaction = $transactionService->create([
+            ...$request->validated(),
+            'user_id' => auth()->id(),
+        ]);
         return response()
                 ->json($transaction, 201)
                 ->header('Location', "/api/transactions/{$transaction->id}");
@@ -36,18 +38,20 @@ class TransactionController extends Controller
      */
     public function show(string $id, TransactionService $transactionService)
     {
-        $transaction = $transactionService->find($id);
+        $transaction = $transactionService->findOrFail($id, auth()->id());
         return response()->json($transaction, 200);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTransactionRequest $request, Transaction $transaction, TransactionService $service)
-    {
-        $transaction = $service->update($transaction, $request->validated());
+    public function update(UpdateTransactionRequest $request, string $id, TransactionService $service
+    ) {
+        $transaction = $service->findOrFail($id, auth()->id());
 
-        return response()->json($transaction, 200);
+        $transaction = $service->update($transaction,$request->validated());
+
+        return response()->json($transaction);
     }
 
     /**
@@ -55,7 +59,7 @@ class TransactionController extends Controller
      */
     public function destroy(string $id, TransactionService $service)
     {
-        $deleted = $service->delete($id);
+        $deleted = $service->delete($id, auth()->id());
 
         if (! $deleted) {
             return response()->json(['message' => 'Transaction not found'], 404);
@@ -70,7 +74,7 @@ class TransactionController extends Controller
     public function summary(Request $request, TransactionService $service)
     {
         return response()->json(
-            $service->getSummary($request->all())
+            $service->getSummary($request->all(), auth()->id())
         );
     }
 }
