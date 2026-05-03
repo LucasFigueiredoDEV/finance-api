@@ -30,7 +30,7 @@ This project allows users to manage income and expenses, organize categories, an
 Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/finance-api.git
+git clone https://github.com/LucasFigueiredoDEV/finance-api.git
 cd finance-api
 ```
 
