@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Services\TransactionService;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
+use App\Http\Resources\TransactionResource;
 
 class TransactionController extends Controller
 {
@@ -16,7 +17,7 @@ class TransactionController extends Controller
     public function index(Request $request,TransactionService $transactionService)
     {
         $transactions = $transactionService->paginate($request, auth()->id());
-        return response()->json($transactions, 200);
+        return TransactionResource::collection($transactions);
     }
 
     /**
@@ -28,8 +29,9 @@ class TransactionController extends Controller
             ...$request->validated(),
             'user_id' => auth()->id(),
         ]);
-        return response()
-                ->json($transaction, 201)
+        return (new TransactionResource($transaction))
+                ->response()
+                ->setStatusCode(201)
                 ->header('Location', "/api/transactions/{$transaction->id}");
     }
 
@@ -39,7 +41,7 @@ class TransactionController extends Controller
     public function show(string $id, TransactionService $transactionService)
     {
         $transaction = $transactionService->findOrFail($id, auth()->id());
-        return response()->json($transaction, 200);
+        return new TransactionResource($transaction);
     }
 
     /**
@@ -51,7 +53,7 @@ class TransactionController extends Controller
 
         $transaction = $service->update($transaction,$request->validated());
 
-        return response()->json($transaction);
+        return new TransactionResource($transaction);
     }
 
     /**
